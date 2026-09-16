@@ -1,0 +1,26 @@
+workflows:
+  react-native-ios:
+    name: React Native iOS (xbloom Mod)
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    environment:
+      node: 18
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install npm dependencies
+        script: |
+          npm install --legacy-peer-deps
+      - name: Expo Prebuild
+        script: |
+          npx expo prebuild --platform ios
+      - name: Build standalone iOS app
+        script: |
+          cd ios
+          xcodebuild -workspace *.xcworkspace -scheme * -configuration Release -archivePath build/App.xcarchive archive CODE_SIGNING_ALLOWED=NO
+          mkdir -p Payload
+          cp -r build/App.xcarchive/Products/Applications/*.app Payload/
+          zip -r app.ipa Payload
+          mv app.ipa ..
+    artifacts:
+      - "*.ipa"
